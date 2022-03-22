@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"playground/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -37,6 +38,12 @@ func (u *UserServiceImpl) GetAll() ([]*models.User, error) {
 }
 
 func (u *UserServiceImpl) UpdateUser(user *models.User) error {
+	filter := bson.D{bson.E{Key: "user_name", Value: user.Name}}
+	update := bson.D{bson.E{Key: "$set", Value: bson.D{bson.E{Key: "user_name", Value: user.Name}, bson.E{Key: "user_age", Value: user.Age}, bson.E{Key: "user_address", Value: user.Address}}}}
+	result, _ := u.usercollection.UpdateOne(u.ctx, filter, update)
+	if result.MatchedCount != 1 {
+		return errors.New("no matched document found for update")
+	}
 	return nil
 }
 
